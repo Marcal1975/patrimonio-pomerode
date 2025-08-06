@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Demo – Sistema Patrimonial</title>
+  <style>
+    /* Core colours and fonts */
+    :root {
+      --primary-color: #2a4365;
+      --primary-light: #3f5b87;
+      --accent-color: #4c9aff;
+      --background-color: #f7f7f7;
+      --card-background: #ffffff;
+      --border-color: #e2e8f0;
+      --text-color: #2d3748;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: var(--background-color);
+      color: var(--text-color);
+    }
+    header {
+      background: var(--primary-color);
+      color: #ffffff;
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.4rem;
+    }
+    nav a {
+      color: #ffffff;
+      margin-left: 1rem;
+      text-decoration: none;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    nav a:hover {
+      text-decoration: underline;
+    }
+    main {
+      padding: 1.5rem;
+    }
+    .hidden {
+      display: none;
+    }
+    .cards {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .card {
+      background: var(--card-background);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      width: 280px;
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .card img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      background: #edf2f7;
+    }
+    .card .card-body {
+      padding: 0.8rem 1rem 1rem;
+      flex: 1;
+    }
+    .card h3 {
+      margin: 0 0 0.4rem;
+      font-size: 1.1rem;
+      color: var(--primary-color);
+    }
+    .card p {
+      margin: 0.2rem 0;
+      font-size: 0.85rem;
+    }
+    .button {
+      display: inline-block;
+      padding: 0.5rem 0.9rem;
+      background: var(--primary-color);
+      color: #ffffff;
+      border-radius: 4px;
+      text-decoration: none;
+      cursor: pointer;
+      margin-top: 0.6rem;
+      font-size: 0.85rem;
+      border: none;
+    }
+    .button:hover {
+      background: var(--primary-light);
+    }
+    .form {
+      background: var(--card-background);
+      padding: 1rem 1.2rem;
+      border-radius: 8px;
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
+      max-width: 520px;
+    }
+    .form label {
+      display: block;
+      margin-top: 0.8rem;
+      font-weight: 600;
+    }
+    .form input,
+    .form textarea,
+    .form select {
+      width: 100%;
+      padding: 0.45rem;
+      margin-top: 0.2rem;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 0.9rem;
+      box-sizing: border-box;
+    }
+    .form button {
+      margin-top: 1rem;
+      padding: 0.6rem 1.2rem;
+      background: var(--primary-color);
+      color: #ffffff;
+      border: none;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+    .form button:hover {
+      background: var(--primary-light);
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 1rem;
+      background: var(--card-background);
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
+    }
+    th, td {
+      border: 1px solid var(--border-color);
+      padding: 0.5rem 0.6rem;
+      font-size: 0.85rem;
+      text-align: left;
+    }
+    th {
+      background: #ebf0f7;
+      font-weight: 600;
+    }
+    .status-aprovado {
+      color: green;
+      font-weight: bold;
+    }
+    .status-recusado {
+      color: red;
+      font-weight: bold;
+    }
+    /* Modal styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background: var(--card-background);
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+      max-width: 400px;
+      width: 100%;
+    }
+    .modal-content h3 {
+      margin-top: 0;
+      margin-bottom: 1rem;
+    }
+    .modal-content input {
+      width: 100%;
+      padding: 0.5rem;
+      margin-bottom: 0.8rem;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+    }
+    .modal-content .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.5rem;
+    }
+    .modal-content .modal-actions button {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    .modal-content .modal-actions .cancel-btn {
+      background: #e2e8f0;
+      color: var(--text-color);
+    }
+    .modal-content .modal-actions .submit-btn {
+      background: var(--primary-color);
+      color: #ffffff;
+    }
+    .modal-content .modal-actions .submit-btn:hover {
+      background: var(--primary-light);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Sistema Patrimonial – Demo</h1>
+    <nav>
+      <a onclick="showTab('catalogo')">Catálogo</a>
+      <a onclick="showTab('admin')">Admin</a>
+    </nav>
+  </header>
+  <main>
+    <!-- Catálogo de itens -->
+    <section id="catalogo" class="tab-content">
+      <h2>Catálogo de Bens</h2>
+      <div id="cards" class="cards"></div>
+    </section>
+    <!-- Administração -->
+    <section id="admin" class="tab-content hidden">
+      <h2>Painel Administrativo</h2>
+      <!-- Login do administrador -->
+      <div id="adminLogin" class="form hidden">
+        <h3>Login do Administrador</h3>
+        <label for="admin-password">Senha:</label>
+        <input type="password" id="admin-password" placeholder="Digite a senha" />
+        <button type="button" class="button" onclick="loginAdmin()">Entrar</button>
+      </div>
+      <!-- Painel após autenticação -->
+      <div id="adminPanel" class="hidden">
+        <h3>Cadastrar novo bem</h3>
+        <form id="formItem" class="form" onsubmit="addItem(event)">
+          <label for="nome">Nome:</label>
+          <input type="text" id="nome" required>
+          <label for="descricao">Descrição:</label>
+          <textarea id="descricao" required></textarea>
+          <label for="classificacao">Classificação:</label>
+          <select id="classificacao" required>
+            <option value="ocioso">ocioso</option>
+            <option value="recuperável">recuperável</option>
+            <option value="antieconômico">antieconômico</option>
+            <option value="irrecuperável">irrecuperável</option>
+          </select>
+          <label for="quantidade">Quantidade:</label>
+          <input type="number" id="quantidade" value="1" min="1" required>
+          <label for="localizacao">Localização:</label>
+          <input type="text" id="localizacao" required>
+
+          <label for="patrimonio">Número de Patrimônio:</label>
+          <input type="text" id="patrimonio" required>
+          <label for="imagem">Imagem:</label>
+          <input type="file" id="imagem" accept="image/*">
+          <button type="submit">Cadastrar Bem</button>
+        </form>
+        <button type="button" class="button" onclick="logoutAdmin()" style="margin-top: 1rem;">Sair</button>
+        <h3>Solicitações</h3>
+        <table id="tabelaSolicitacoes">
+          <thead>
+            <tr>
+              <th>ID</th><th>Servidor</th><th>Bem</th><th>Qtd.</th><th>Status</th><th>Ações</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal para solicitação de bem -->
+  <div id="requestModal" class="modal-overlay" style="display:none;">
+    <div class="modal-content">
+      <h3>Solicitar bem</h3>
+      <label for="solicitar-nome">Nome do servidor:</label>
+      <input type="text" id="solicitar-nome" placeholder="Digite seu nome" />
+      <label for="solicitar-quantidade">Quantidade desejada:</label>
+      <input type="number" id="solicitar-quantidade" min="1" placeholder="1" />
+      <div class="modal-actions">
+        <button class="cancel-btn" type="button" onclick="closeRequestModal()">Cancelar</button>
+        <button class="submit-btn" type="button" onclick="submitRequest()">Enviar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Carrega dados de localStorage ou inicializa
+    let items = JSON.parse(localStorage.getItem('items') || '[]');
+    let requests = JSON.parse(localStorage.getItem('requests') || '[]');
+
+    // Variável para controlar o item a ser solicitado no modal
+    let currentItemId = null;
+
+    // Configuração de autenticação do administrador
+    const ADMIN_PASSWORD = 'Pomerode@1959@';
+
+    // Mostra a aba atual
+    function showTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.getElementById(tabId).classList.remove('hidden');
+      if (tabId === 'catalogo') {
+        renderCatalog();
+      }
+      if (tabId === 'admin') {
+        // Verifica autenticação do administrador
+        checkAdminAuth();
+      }
+    }
+    // Renderiza catálogo
+    function renderCatalog() {
+      const container = document.getElementById('cards');
+      container.innerHTML = '';
+      if (items.length === 0) {
+        container.innerHTML = '<p>Nenhum bem cadastrado.</p>';
+        return;
+      }
+      items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        // imagem
+        const imgEl = document.createElement('img');
+        if (item.imagem) {
+          imgEl.src = item.imagem;
+        } else {
+          // placeholder se não houver imagem
+          imgEl.src = '';
+          imgEl.style.background = '#e2e8f0';
+        }
+        card.appendChild(imgEl);
+        const body = document.createElement('div');
+        body.className = 'card-body';
+        body.innerHTML = `<h3>${item.nome}</h3>
+          <p><strong>Nº Patrimônio:</strong> ${item.patrimonio || ''}</p>
+          <p><strong>Classificação:</strong> ${item.classificacao}</p>
+          <p><strong>Localização:</strong> ${item.localizacao}</p>
+          <p>${item.descricao}</p>
+          <p><strong>Quantidade:</strong> ${item.quantidade}</p>`;
+        card.appendChild(body);
+        const actionContainer = document.createElement('div');
+        actionContainer.style.padding = '0 1rem 1rem';
+        if ((item.classificacao === 'ocioso' || item.classificacao === 'recuperável') && item.quantidade > 0) {
+          const btn = document.createElement('button');
+          btn.className = 'button';
+          btn.textContent = 'Solicitar';
+          btn.onclick = () => openRequestModal(item.id);
+          actionContainer.appendChild(btn);
+        } else {
+          const span = document.createElement('span');
+          span.textContent = 'Indisponível';
+          actionContainer.appendChild(span);
+        }
+        card.appendChild(actionContainer);
+        container.appendChild(card);
+      });
+    }
+    // Renderiza lista de solicitações no admin
+    function renderAdmin() {
+      const tbody = document.querySelector('#tabelaSolicitacoes tbody');
+      tbody.innerHTML = '';
+      requests.forEach(req => {
+        const tr = document.createElement('tr');
+        const item = items.find(i => i.id === req.item_id) || {};
+        // Aplica classe de status para melhor visualização
+        const statusClass = req.status === 'aprovado' ? 'status-aprovado' : req.status === 'recusado' ? 'status-recusado' : '';
+        tr.innerHTML = `<td>${req.id}</td><td>${req.servidor}</td><td>${item.nome || ''}</td><td>${req.quantidade}</td><td class="${statusClass}">${req.status}</td>`;
+        const tdActions = document.createElement('td');
+        if (req.status === 'pendente') {
+          const aprovar = document.createElement('button');
+          aprovar.className = 'button';
+          aprovar.textContent = 'Aprovar';
+          aprovar.onclick = () => updateRequest(req.id, 'aprovado');
+          const recusar = document.createElement('button');
+          recusar.className = 'button';
+          recusar.textContent = 'Recusar';
+          recusar.onclick = () => updateRequest(req.id, 'recusado');
+          tdActions.appendChild(aprovar);
+          tdActions.appendChild(recusar);
+        }
+        tr.appendChild(tdActions);
+        tbody.appendChild(tr);
+      });
+    }
+    // Adiciona novo item
+    function addItem(event) {
+      event.preventDefault();
+      const nome = document.getElementById('nome').value.trim();
+      const descricao = document.getElementById('descricao').value.trim();
+      const classificacao = document.getElementById('classificacao').value;
+      const quantidade = parseInt(document.getElementById('quantidade').value, 10);
+      const localizacao = document.getElementById('localizacao').value.trim();
+      const patrimonio = document.getElementById('patrimonio').value.trim();
+      const imagemInput = document.getElementById('imagem');
+      const id = (items.length ? Math.max(...items.map(i => i.id)) + 1 : 1);
+      // Função auxiliar para persistir e mostrar alerta
+      const persistItem = (imageData) => {
+        items.push({ id, nome, descricao, classificacao, quantidade, localizacao, patrimonio, imagem: imageData });
+        localStorage.setItem('items', JSON.stringify(items));
+        document.getElementById('formItem').reset();
+        alert('Bem cadastrado!');
+        renderCatalog();
+      };
+      if (imagemInput.files && imagemInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          persistItem(e.target.result);
+        };
+        reader.readAsDataURL(imagemInput.files[0]);
+      } else {
+        persistItem('');
+      }
+    }
+    // Abrir modal de solicitação
+    function openRequestModal(itemId) {
+      currentItemId = itemId;
+      // Reset campos
+      document.getElementById('solicitar-nome').value = '';
+      document.getElementById('solicitar-quantidade').value = '1';
+      document.getElementById('requestModal').style.display = 'flex';
+    }
+
+    // Fecha modal
+    function closeRequestModal() {
+      document.getElementById('requestModal').style.display = 'none';
+      currentItemId = null;
+    }
+
+    // Submete solicitação pelo modal
+    function submitRequest() {
+      const servidor = document.getElementById('solicitar-nome').value.trim();
+      const quantidade = parseInt(document.getElementById('solicitar-quantidade').value, 10);
+      if (!servidor) {
+        alert('Informe o nome do servidor.');
+        return;
+      }
+      if (!quantidade || quantidade < 1) {
+        alert('Informe uma quantidade válida.');
+        return;
+      }
+      const id = (requests.length ? Math.max(...requests.map(r => r.id)) + 1 : 1);
+      requests.push({ id, item_id: currentItemId, servidor, quantidade, status: 'pendente' });
+      localStorage.setItem('requests', JSON.stringify(requests));
+      closeRequestModal();
+      alert('Solicitação realizada!');
+      renderAdmin();
+    }
+    // Atualiza status de uma solicitação
+    function updateRequest(id, status) {
+      const req = requests.find(r => r.id === id);
+      if (!req) return;
+      req.status = status;
+      localStorage.setItem('requests', JSON.stringify(requests));
+      // diminui quantidade se aprovado
+      if (status === 'aprovado') {
+        const item = items.find(i => i.id === req.item_id);
+        if (item) {
+          item.quantidade = Math.max(0, item.quantidade - req.quantidade);
+        }
+        localStorage.setItem('items', JSON.stringify(items));
+      }
+      renderAdmin();
+      renderCatalog();
+    }
+
+    // Controle de autenticação de administrador
+    function checkAdminAuth() {
+      const isAuth = localStorage.getItem('isAdminAuthenticated') === 'true';
+      const loginDiv = document.getElementById('adminLogin');
+      const panelDiv = document.getElementById('adminPanel');
+      if (isAuth) {
+        loginDiv.classList.add('hidden');
+        panelDiv.classList.remove('hidden');
+        renderAdmin();
+      } else {
+        loginDiv.classList.remove('hidden');
+        panelDiv.classList.add('hidden');
+      }
+    }
+    function loginAdmin() {
+      const pwd = document.getElementById('admin-password').value;
+      if (pwd === ADMIN_PASSWORD) {
+        localStorage.setItem('isAdminAuthenticated', 'true');
+        document.getElementById('admin-password').value = '';
+        checkAdminAuth();
+      } else {
+        alert('Senha incorreta!');
+      }
+    }
+    function logoutAdmin() {
+      localStorage.setItem('isAdminAuthenticated', 'false');
+      checkAdminAuth();
+    }
+    // Inicialização
+    showTab('catalogo');
+
+    // Ligações dos botões do modal
+    // Como o modal está no DOM, associamos eventos aos botões após a execução do script
+    document.querySelectorAll('.cancel-btn').forEach(btn => btn.addEventListener('click', closeRequestModal));
+    document.querySelectorAll('.submit-btn').forEach(btn => btn.addEventListener('click', submitRequest));
+
+    // Garante que o modal esteja fechado ao carregar a página
+    closeRequestModal();
+  </script>
+</body>
+</html>
